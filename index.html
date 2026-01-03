@@ -1,485 +1,406 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Price — Market</title>
-<link rel="icon" href="icon.png" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>App de Produtos</title>
+
 <style>
-  :root{
-    --bg:#0f1724;
-    --card:#0b1220;
-    --muted:#93a5c4;
-    --accent:#47b7ff;
-    --accent-2:#6dd3ff;
-    --glass: rgba(255,255,255,0.03);
-    --danger:#ff6b6b;
-    --radius:14px;
-    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0;
-    background:linear-gradient(180deg, var(--bg), #081124 120%);
-    color:#eef6ff;
-    -webkit-font-smoothing:antialiased;
-    -moz-osx-font-smoothing:grayscale;
-    padding:14px;
-  }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
 
-  /* Top bar */
-  .top {
-    display:flex;
-    gap:12px;
-    align-items:center;
-    margin-bottom:10px;
-  }
-  .logo {
-    display:flex;
-    align-items:center;
-    gap:10px;
-    background:var(--card);
-    padding:8px 12px;
-    border-radius:999px;
-    box-shadow: 0 6px 20px rgba(2,6,23,0.6);
-  }
-  .logo img{ width:36px; height:36px; border-radius:8px; object-fit:cover }
-  .logo h1{ margin:0; font-size:1rem; letter-spacing:0.6px }
+body {
+  background: #0f0f0f;
+  color: #fff;
+}
 
-  .searchWrap{
-    flex:1;
-    display:flex;
-    align-items:center;
-    gap:8px;
-    background:var(--card);
-    padding:8px 12px;
-    border-radius:999px;
-  }
-  .searchWrap input{
-    background:transparent; border:0; outline:0; color:inherit; width:100%;
-    font-size:0.95rem;
-  }
-  .filterBtn{
-    background:linear-gradient(180deg,var(--accent),var(--accent-2));
-    border:none; padding:8px 10px; border-radius:10px; color:#062031; font-weight:700;
-  }
+header {
+  background: #121212;
+  padding: 15px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+}
 
-  /* Sections */
-  .sectionTitle{
-    margin:16px 0 6px 0;
-    display:flex; justify-content:space-between; align-items:center;
-  }
-  .sectionTitle h2{ margin:0; font-size:1rem }
-  .sectionTitle small{ color:var(--muted); font-size:0.85rem }
+nav {
+  display: flex;
+  background: #181818;
+}
 
-  /* Cards grid */
-  .grid{
-    display:grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap:12px;
-  }
-  .card{
-    background:linear-gradient(180deg, rgba(255,255,255,0.02), var(--glass));
-    padding:10px;
-    border-radius:12px;
-    box-shadow: 0 4px 14px rgba(2,6,23,0.6);
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-    min-height:120px;
-  }
-  .card .img{
-    height:70px;
-    border-radius:10px;
-    background:#0b2540;
-    display:flex; align-items:center; justify-content:center;
-    overflow:hidden;
-  }
-  .card img{ width:100%; height:100%; object-fit:cover }
+nav button {
+  flex: 1;
+  padding: 12px;
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 14px;
+}
 
-  .card .title{ font-weight:700; font-size:0.95rem }
-  .card .priceRow{ display:flex; justify-content:space-between; align-items:center; gap:8px }
-  .price{ font-weight:800; color:var(--accent-2) }
-  .oldPrice{ text-decoration:line-through; color:rgba(255,255,255,0.25); font-size:0.85rem }
+nav button.active {
+  color: #00ff88;
+  border-bottom: 2px solid #00ff88;
+}
 
-  .chip{ background:rgba(255,255,255,0.03); padding:6px 8px; border-radius:999px; font-size:0.8rem; color:var(--muted) }
+section {
+  display: none;
+  padding: 15px;
+}
 
-  /* Buttons */
-  .btn{
-    border:0; padding:8px 10px; border-radius:10px; cursor:pointer;
-  }
-  .btn-primary{ background:var(--accent); color:#042033; font-weight:700 }
-  .btn-ghost{ background:transparent; color:var(--muted); border:1px solid rgba(255,255,255,0.03) }
+section.active {
+  display: block;
+}
 
-  /* bottom nav */
-  .nav{
-    position:fixed; left:14px; right:14px; bottom:16px;
-    display:flex; gap:8px; justify-content:space-between;
-  }
-  .nav a{
-    flex:1; text-align:center; padding:10px 12px; border-radius:12px; text-decoration:none; color:inherit;
-    background:var(--card);
-  }
-  .nav a.active{ box-shadow:0 6px 20px rgba(4,10,25,0.6); border:1px solid rgba(255,255,255,0.02) }
+input, button {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  border: none;
+}
 
-  /* form */
-  form{ display:flex; flex-direction:column; gap:10px; padding:6px 0 60px 0 }
-  label{ font-size:0.85rem; color:var(--muted) }
-  input[type=text], input[type=number], textarea, select {
-    background:transparent; border:1px solid rgba(255,255,255,0.05);
-    padding:10px; border-radius:10px; color:inherit; outline:none;
-  }
-  textarea{ min-height:100px; resize:vertical; }
+input {
+  background: #1e1e1e;
+  color: #fff;
+}
 
-  .row{ display:flex; gap:8px }
-  .row .col{ flex:1 }
+button {
+  background: #00ff88;
+  color: #000;
+  font-weight: bold;
+}
 
-  .actions{ display:flex; gap:8px; margin-top:6px }
-  .small { font-size:0.85rem; color:var(--muted) }
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+}
 
-  /* responsive */
-  @media(min-width:600px){
-    .grid{ grid-template-columns: repeat(3, 1fr) }
-  }
+.card {
+  background: #1c1c1c;
+  border-radius: 8px;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.card img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.card h3 {
+  font-size: 14px;
+  margin: 5px 0;
+}
+
+.card p {
+  font-size: 12px;
+  color: #bbb;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  display: none;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: #1e1e1e;
+  padding: 20px;
+  border-radius: 10px;
+  width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.modal img {
+  width: 100%;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.barra-pesquisa {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.barra-pesquisa input {
+  flex: 1;
+  width: auto;
+}
+
+.barra-pesquisa button {
+  width: 50px;
+  padding: 10px;
+}
+
+.barra-pesquisa input,
+.barra-pesquisa button {
+  border-radius: 20px;
+}
+
 </style>
 </head>
 <body>
-  <div id="app">
-    <!-- TOP -->
-    <div class="top">
-      <div class="logo">
-        <img src="icon.png" alt="price" onerror="this.style.display='none'">
-        <h1>Price</h1>
-      </div>
 
-      <div class="searchWrap">
-        <input id="searchInput" placeholder="Pesquisar produtos..." />
-        <button class="filterBtn" id="searchBtn">Pesquisar</button>
-      </div>
-    </div>
+<header>📦 App de Produtos</header>
 
-    <!-- MAIN CONTENT -->
-    <main id="view"></main>
+<!--bt trocar abas-->
+<nav>
+<button onclick="trocarAba('inicio', this)" class="active">Início</button>
+<button onclick="trocarAba('cadastrar', this)">Cadastrar</button>
+<button onclick="trocarAba('editar', this)">Editar</button>
+<button onclick="trocarAba('produtos', this)">Produtos</button>
+</nav>
+<!--bt trocar abas-->
+<section id="inicio" class="active">
+  <h3>🔥 Mais baratos</h3>
+  <div class="cards" id="inicioCards"></div>
+</section>
 
-    <!-- NAV -->
-    <nav class="nav">
-      <a href="#home" id="navHome" class="active">Início</a>
-      <a href="#list" id="navList">Consulta</a>
-      <a href="#add" id="navAdd">Cadastrar</a>
-    </nav>
-  </div>
+<section id="cadastrar">
+  <input id="produto" placeholder="Produto">
+  <input id="preco" type="number" placeholder="Preço">
+  <input id="promo" placeholder="Promoção">
+  <input id="local" placeholder="Local">
+  
+		<!---- imagem-----> 
+  <input 
+  id="imagem" 
+  type="file" 
+  accept="image/*"
+  capture="environment">
+		<!---- imagem----->
+		
+  <button onclick="salvarProduto()">Salvar</button>
+</section>
+
+<section id="editar">
+  <div class="cards" id="editarCards"></div>
+</section>
+
+<section id="produtos">
+
+		<!--pesquesar-->
+<div class="barra-pesquisa">
+  <input 
+    id="campoBusca"
+    placeholder="Pesquisar produto..."
+    oninput="buscarProduto()"
+  >
+  <button onclick="buscarProduto()">🔍</button>
+</div>
+		<!--pesquesar-->
+  <div class="cards" id="produtosCards"></div>
+</section>
+
+<div class="modal" id="modal">
+  <div class="modal-content" id="modalContent"></div>
+</div>
 
 <script>
-/* ===== Simple SPA routing ===== */
-const view = document.getElementById('view');
-const searchInput = document.getElementById('searchInput');
-const searchBtn = document.getElementById('searchBtn');
+let produtos = JSON.parse(localStorage.getItem("produtos")) || [];
+let imagemBase64 = "";
 
-const STORAGE_KEY = 'price_products_v1';
+document.getElementById("imagem").addEventListener("change", function () {
+  const file = this.files[0];
+  if (!file) return;
 
-/* Helpers */
-function readStorage(){ 
-  try{
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-  }catch(e){ return [] }
-}
-function writeStorage(v){ localStorage.setItem(STORAGE_KEY, JSON.stringify(v)); }
-function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
-
-/* sample seed if empty (only first load) */
-if(!localStorage.getItem(STORAGE_KEY)){
-  const sample = [
-    { id: uid(), image:"img/exemplo1.jpg", produto:"Camiseta básica", descricao:"Malha leve", preco:27.15, promocao:false, empresa:"Loja A", local:"São Paulo" },
-    { id: uid(), image:"img/exemplo2.png", produto:"Relógio esportivo", descricao:"Resistente a água", preco:45.99, promocao:true, empresa:"TimeTech", local:"Rio" },
-    { id: uid(), image:"img/exemplo3.jpg", produto:"Óculos de sol", descricao:"Proteção UV", preco:32.00, promocao:false, empresa:"ModaX", local:"Belo Horizonte" }
-  ];
-  writeStorage(sample);
-}
-
-/* ROUTES */
-function route(){
-  const hash = location.hash.replace('#','') || 'home';
-  // set active nav
-  document.querySelectorAll('.nav a').forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#'+hash));
-  if(hash === 'home') renderHome();
-  else if(hash === 'add') renderAdd();
-  else if(hash === 'list') renderList();
-  else if(hash.startsWith('edit:')) {
-    const id = hash.split(':')[1];
-    renderAdd(id);
-  } else {
-    renderHome();
-  }
-}
-
-/* RENDER HOME: destaques e produtos mais baratos */
-function renderHome(){
-  const products = readStorage();
-  const highlights = products.filter(p => p.promocao).slice(0,6);
-  const cheapest = [...products].sort((a,b)=> a.preco - b.preco).slice(0,6);
-
-  view.innerHTML = `
-    <section>
-      <div class="sectionTitle">
-        <h2>Destaques</h2>
-        <small>${highlights.length} encontrados</small>
-      </div>
-      <div class="grid" id="highlights">
-        ${highlights.map(p => cardHTML(p)).join('')}
-      </div>
-
-      <div class="sectionTitle" style="margin-top:14px">
-        <h2>Mais baratos</h2>
-        <small>${cheapest.length} encontrados</small>
-      </div>
-      <div class="grid" id="cheapest">
-        ${cheapest.map(p => cardHTML(p)).join('')}
-      </div>
-    </section>
-  `;
-  setupCardButtons();
-}
-
-/* RENDER LIST (consulta) */
-function renderList(){
-  const products = readStorage();
-  const q = searchInput.value.trim().toLowerCase();
-  const filtered = products.filter(p => {
-    if(!q) return true;
-    return (p.produto||'').toLowerCase().includes(q)
-        || (p.descricao||'').toLowerCase().includes(q)
-        || (p.empresa||'').toLowerCase().includes(q);
-  });
-
-  view.innerHTML = `
-    <section>
-      <div class="sectionTitle">
-        <h2>Consulta</h2>
-        <small>${filtered.length} produtos</small>
-      </div>
-
-      <div class="grid">
-        ${filtered.map(p => listCardHTML(p)).join('')}
-      </div>
-    </section>
-  `;
-  setupCardButtons();
-}
-
-/* RENDER ADD (novo ou editar) */
-function renderAdd(editId = null){
-  const editing = editId ? readStorage().find(p=>p.id===editId) : null;
-  view.innerHTML = `
-    <section>
-      <div class="sectionTitle">
-        <h2>${editing? 'Editar produto' : 'Cadastrar produto'}</h2>
-        <small>${editing? 'Atualize os campos' : 'Preencha e salve'}</small>
-      </div>
-
-      <form id="productForm">
-        <label>Imagem (referenciar existente em img/ ou enviar novo arquivo)</label>
-        <div class="row">
-          <div class="col">
-            <input list="imglist" id="imageRef" placeholder="Ex: img/meu-produto.jpg">
-            <datalist id="imglist">
-              <!-- user can add options manually if desired -->
-              <option value="img/exemplo1.jpg">
-              <option value="img/exemplo2.png">
-              <option value="img/exemplo3.jpg">
-            </datalist>
-            <div class="small">ou selecione um arquivo (será salvo no navegador):</div>
-            <input type="file" id="imageFile" accept="image/*">
-          </div>
-        </div>
-
-        <label>Produto</label>
-        <input id="produto" type="text" required>
-
-        <label>Descrição</label>
-        <textarea id="descricao"></textarea>
-
-        <div class="row">
-          <div class="col">
-            <label>Preço (R$)</label>
-            <input id="preco" type="number" step="0.01" min="0">
-          </div>
-          <div class="col">
-            <label>Promoção</label>
-            <select id="promocao">
-              <option value="false">Não</option>
-              <option value="true">Sim</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="col">
-            <label>Empresa</label>
-            <input id="empresa" type="text">
-          </div>
-          <div class="col">
-            <label>Local</label>
-            <input id="local" type="text">
-          </div>
-        </div>
-
-        <div class="actions">
-          <button type="submit" class="btn btn-primary">${editing? 'Salvar alterações' : 'Cadastrar'}</button>
-          <a href="#home" class="btn btn-ghost">Cancelar</a>
-          ${editing ? '<button id="delBtn" type="button" class="btn" style="background:var(--danger)">Excluir</button>' : ''}
-        </div>
-      </form>
-    </section>
-  `;
-
-  // prefill
-  if(editing){
-    document.getElementById('imageRef').value = editing.image || '';
-    document.getElementById('produto').value = editing.produto || '';
-    document.getElementById('descricao').value = editing.descricao || '';
-    document.getElementById('preco').value = editing.preco ?? '';
-    document.getElementById('promocao').value = editing.promocao ? 'true' : 'false';
-    document.getElementById('empresa').value = editing.empresa || '';
-    document.getElementById('local').value = editing.local || '';
+  if (!file.type.startsWith("image/")) {
+    alert("Formato não suportado!");
+    this.value = "";
+    return;
   }
 
-  // handle submit
-  const form = document.getElementById('productForm');
-  form.onsubmit = async (e) => {
-    e.preventDefault();
-    const imageRef = document.getElementById('imageRef').value.trim();
-    const imageFile = document.getElementById('imageFile').files[0];
-    let imageValue = imageRef || '';
+  const reader = new FileReader();
 
-    if(imageFile){
-      imageValue = await fileToDataURL(imageFile);
-    } else if(!imageValue){
-      // fallback placeholder tiny image (SVG data)
-      imageValue = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="100%" height="100%" fill="#0b1220"/></svg>');
-    }
-
-    const obj = {
-      id: editing ? editing.id : uid(),
-      image: imageValue,
-      produto: document.getElementById('produto').value.trim(),
-      descricao: document.getElementById('descricao').value.trim(),
-      preco: Number(document.getElementById('preco').value || 0),
-      promocao: document.getElementById('promocao').value === 'true',
-      empresa: document.getElementById('empresa').value.trim(),
-      local: document.getElementById('local').value.trim()
-    };
-
-    const all = readStorage();
-    if(editing){
-      const idx = all.findIndex(p=>p.id===editing.id);
-      if(idx>=0) all[idx] = obj;
-    } else {
-      all.push(obj);
-    }
-    writeStorage(all);
-    location.hash = '#home';
+  reader.onload = function () {
+    imagemBase64 = reader.result;
   };
 
-  // delete
-  if(editing){
-    document.getElementById('delBtn').onclick = () => {
-      if(confirm('Excluir este produto?')) {
-        const all = readStorage().filter(p => p.id !== editing.id);
-        writeStorage(all);
-        location.hash = '#list';
-      }
-    };
-  }
+  reader.readAsDataURL(file);
+});
+
+function trocarAba(id, btn) {
+  document.querySelectorAll("section").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+
+  document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+
+  if (id === "inicio") renderInicio();
+  if (id === "produtos") renderProdutos(produtos);
+  if (id === "editar") renderEditar();
 }
 
-/* CARD HTML generation */
-function cardHTML(p){
-  return `
-    <div class="card" data-id="${p.id}">
-      <div class="img">
-        <img src="${escapeAttr(p.image)}" alt="${escapeAttr(p.produto)}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;400&quot; height=&quot;300&quot;><rect width=&quot;100%&quot; height=&quot;100%&quot; fill=&quot;%230b2540&quot;/></svg>'">
-      </div>
-      <div class="title">${escapeHtml(p.produto)}</div>
-      <div class="small">${escapeHtml(p.empresa)} · ${escapeHtml(p.local)}</div>
-      <div class="priceRow">
-        <div><span class="price">R$ ${Number(p.preco).toFixed(2)}</span></div>
-        <div style="display:flex;gap:6px">
-          <button class="btn" onclick="shareProduct('${p.id}')">🔗</button>
-          <a href="#edit:${p.id}" class="btn btn-ghost">✏️</a>
-        </div>
-      </div>
-    </div>
-  `;
+function salvarProduto() {
+ if (!imagemBase64) {
+  alert("Selecione uma imagem!");
+  return;
 }
-function listCardHTML(p){
-  return `
-    <div class="card" data-id="${p.id}">
-      <div style="display:flex;gap:10px">
-        <div style="width:28%; border-radius:10px; overflow:hidden;">
-          <img src="${escapeAttr(p.image)}" alt="${escapeAttr(p.produto)}" style="width:100%; height:100%; object-fit:cover" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;400&quot; height=&quot;300&quot;><rect width=&quot;100%&quot; height=&quot;100%&quot; fill=&quot;%230b2540&quot;/></svg>'">
-        </div>
-        <div style="flex:1">
-          <div class="title">${escapeHtml(p.produto)}</div>
-          <div class="small">${escapeHtml(p.descricao)}</div>
-          <div style="margin-top:8px" class="priceRow">
-            <div><span class="price">R$ ${Number(p.preco).toFixed(2)}</span></div>
-            <div style="display:flex;gap:6px">
-              <a href="#edit:${p.id}" class="btn btn-ghost">Editar</a>
-              <button onclick="removeProduct('${p.id}')" class="btn" style="background:var(--danger); color:#fff">Apagar</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
+ produtos.push({
+    produto: produto.value,
+    preco: Number(preco.value),
+    promo: promo.value,
+    local: local.value,
+    imagem: imagemBase64
+  });
+
+  localStorage.setItem("produtos", JSON.stringify(produtos));
+
+  alert("Produto cadastrado!");
+
+  produto.value = preco.value = promo.value = local.value = "";
+  imagem.value = "";
+  imagemBase64 = "";
+
+  render();
 }
 
-/* Utilities */
-function escapeHtml(str=''){ return String(str).replace(/[&<>"']/g, s=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[s]); }
-function escapeAttr(s=''){ return s && s.startsWith('data:') ? s : (s||'').replace(/"/g,'&quot;'); }
-
-/* clickable card buttons (share/edit handled inline) */
-function setupCardButtons(){
-  // nothing more needed since buttons inline contain actions
+function render() {
+  renderInicio();
+  renderProdutos();
+  renderEditar();
 }
 
-/* share / remove */
-function shareProduct(id){
-  const p = readStorage().find(x=>x.id===id);
-  if(!p) return alert('Produto não encontrado');
-  // simplest share: copy JSON to clipboard
-  const text = `${p.produto} — R$ ${Number(p.preco).toFixed(2)}\n${p.descricao || ''}\nEmpresa: ${p.empresa || ''} - ${p.local || ''}`;
-  navigator.clipboard?.writeText(text).then(()=> alert('Informações copiadas para a área de transferência'));
-}
-
-function removeProduct(id){
-  if(!confirm('Confirmar exclusão?')) return;
-  const all = readStorage().filter(p=>p.id!==id);
-  writeStorage(all);
-  route();
-}
-
-/* convert file to dataURL */
-function fileToDataURL(file){
-  return new Promise((res, rej) => {
-    const reader = new FileReader();
-    reader.onload = () => res(reader.result);
-    reader.onerror = rej;
-    reader.readAsDataURL(file);
+function renderProdutos(lista = produtos) {
+  produtosCards.innerHTML = "";
+  lista.forEach(p => {
+    const indexReal = produtos.indexOf(p);
+    produtosCards.innerHTML += cardHTML(p, indexReal);
   });
 }
 
-/* search handler */
-searchBtn.onclick = () => {
-  location.hash = '#list';
-};
-searchInput.addEventListener('keydown', (e) => { if(e.key === 'Enter') { e.preventDefault(); location.hash = '#list'; } });
+function renderInicio() {
+  inicioCards.innerHTML = "";
+  [...produtos]
+    .sort((a,b)=>a.preco-b.preco)
+    .slice(0,4)
+    .forEach((p, i) => inicioCards.innerHTML += cardHTML(p, i));
+}
 
-/* Listen to hash changes */
-window.addEventListener('hashchange', route);
-route(); // initial
+function renderEditar() {
+  editarCards.innerHTML = "";
 
+  produtos.forEach((p, i) => {
+    editarCards.innerHTML += `
+      <div class="card">
+        <h3>${p.produto}</h3>
+        <p>R$ ${p.preco}</p>
+        <button onclick="abrirEditar(${i})">✏️ Editar</button>
+        <button onclick="excluir(${i})">🗑️ Excluir</button>
+      </div>
+    `;
+  });
+}
+
+function abrirEditar(i) {
+  modal.style.display = "flex";
+
+  modalContent.innerHTML = `
+    <h2>Editar Produto</h2>
+
+    <input id="eProduto" value="${produtos[i].produto}">
+    <input id="ePreco" type="number" value="${produtos[i].preco}">
+    <input id="ePromo" value="${produtos[i].promo}">
+    <input id="eLocal" value="${produtos[i].local}">
+    <input id="eImagem" type="file" accept="image/*">
+
+    <button onclick="salvarEdicao(${i})">Salvar Alterações</button>
+    <button onclick="modal.style.display='none'">Cancelar</button>
+  `;
+}
+
+function salvarEdicao(i) {
+  const file = document.getElementById("eImagem").files[0];
+
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function () {
+      produtos[i].imagem = reader.result;
+      atualizarProduto(i);
+    };
+    reader.readAsDataURL(file);
+  } else {
+    atualizarProduto(i);
+  }
+}
+
+function atualizarProduto(i) {
+  produtos[i].produto = document.getElementById("eProduto").value;
+  produtos[i].preco = Number(document.getElementById("ePreco").value);
+  produtos[i].promo = document.getElementById("ePromo").value;
+  produtos[i].local = document.getElementById("eLocal").value;
+
+  localStorage.setItem("produtos", JSON.stringify(produtos));
+
+  modal.style.display = "none";
+  render();
+}
+
+
+function excluir(i) {
+  produtos.splice(i,1);
+  localStorage.setItem("produtos", JSON.stringify(produtos));
+  render();
+}
+
+function buscarProduto() {
+  const texto = document.getElementById("campoBusca").value.toLowerCase().trim();
+
+  const lista = texto === ""
+    ? produtos
+    : produtos.filter(p =>
+        p.produto.toLowerCase().includes(texto)
+      );
+
+  renderProdutos(lista);
+}
+
+function cardHTML(p, i) {
+  return `
+  <div class="card" onclick="abrirModalIndex(${i})">
+    <img src="${p.imagem}">
+    <h3>${p.produto}</h3>
+    <p>R$ ${p.preco}</p>
+  </div>`;
+}
+
+function abrirModalIndex(i) {
+  const p = produtos[i];
+  modal.style.display = "flex";
+  modalContent.innerHTML = `
+    <img src="${p.imagem}">
+    <h2>${p.produto}</h2>
+    <p>Preço: R$ ${p.preco}</p>
+    <p>Promoção: ${p.promo}</p>
+    <p>Local: ${p.local}</p>
+    <button onclick="modal.style.display='none'">Fechar</button>
+  `;
+}
+
+function abrirModal(img, prod, preco, promo, local) {
+  modal.style.display="flex";
+  modalContent.innerHTML = `
+    <img src="${img}">
+    <h2>${prod}</h2>
+    <p>Preço: R$ ${preco}</p>
+    <p>Promoção: ${promo}</p>
+    <p>Local: ${local}</p>
+    <button onclick="modal.style.display='none'">Fechar</button>`;
+}
+
+render();
 </script>
+
 </body>
 </html>
