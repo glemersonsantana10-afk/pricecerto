@@ -174,11 +174,10 @@ button {
   <input id="local" placeholder="Local">
   
 		<!---- imagem-----> 
-  <input 
+<input 
   id="imagem" 
   type="file" 
-  accept="image/*"
-  capture="environment">
+  accept="image/*">
 		<!---- imagem----->
 		
   <button onclick="salvarProduto()">Salvar</button>
@@ -212,7 +211,7 @@ let produtos = JSON.parse(localStorage.getItem("produtos")) || [];
 let imagemBase64 = "";
 
 document.getElementById("imagem").addEventListener("change", function () {
-  const file = this.files[0];
+  const file = this.files && this.files[0];
   if (!file) return;
 
   if (!file.type.startsWith("image/")) {
@@ -223,7 +222,7 @@ document.getElementById("imagem").addEventListener("change", function () {
 
   const reader = new FileReader();
 
-  reader.onload = function () {
+  reader.onloadend = function () {
     imagemBase64 = reader.result;
   };
 
@@ -243,8 +242,8 @@ function trocarAba(id, btn) {
 }
 
 function salvarProduto() {
- if (!imagemBase64) {
-  alert("Selecione uma imagem!");
+if (!imagemBase64) {
+  alert("Aguarde a imagem carregar ou selecione uma imagem válida.");
   return;
 }
  produtos.push({
